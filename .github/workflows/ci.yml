@@ -30,6 +30,7 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           push: true
+          load: true   # 👈 Important fix
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action:latest
 
       # 5️⃣ Configure AWS credentials (for ECR)
@@ -45,7 +46,7 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      # 7️⃣ Tag and push image to ECR
+      ## 7️⃣ Tag and push image to ECR
       - name: Push Docker image to Amazon ECR
         run: |
           docker tag ${{ secrets.DOCKERHUB_USERNAME }}/github-action:latest \
