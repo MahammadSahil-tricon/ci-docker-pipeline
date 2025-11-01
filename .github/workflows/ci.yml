@@ -25,23 +25,27 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      # 4️⃣ Build Docker image (and load locally for testing)
+      # 4️⃣ Build Docker image (load locally)
       - name: Build Docker image
         uses: docker/build-push-action@v6
         with:
           context: .
-          load: true          # 👈 Ensures image is available locally
+          load: true          # 👈 Important! Makes image available locally
           push: false
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action:latest
 
-      # 5️⃣ Run a container to test the build
+      # 5️⃣ Verify image exists (debugging)
+      - name: List Docker images
+        run: docker images
+
+      # 6️⃣ Test Docker image
       - name: Test Docker image
         run: |
-          echo "Running container test..."
+          echo "Running container to test..."
           docker run --rm ${{ secrets.DOCKERHUB_USERNAME }}/github-action:latest python app.py
           echo "✅ Container ran successfully!"
 
-      # 6️⃣ Push image to Docker Hub
+      # 7️⃣ Push to Docker Hub
       - name: Push image to Docker Hub
         uses: docker/build-push-action@v6
         with:
@@ -49,7 +53,7 @@ jobs:
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/github-action:latest
 
-      # 7️⃣ Log in to Amazon ECR
+      # 8️⃣ Log in to Amazon ECR
       - name: Log in to Amazon ECR
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
@@ -58,7 +62,7 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # 8️⃣ Tag and push to ECR
+      # 9️⃣ Push image to ECR
       - name: Push Docker image to Amazon ECR
         run: |
           docker tag ${{ secrets.DOCKERHUB_USERNAME }}/github-action:latest \
